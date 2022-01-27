@@ -12,12 +12,12 @@ class map_generator():
                 if map[y][x] == 'G':
                     goal_pos = (x,y)
 
-
         return {
             'map':map,
             'start':starting_pos,
             'goal': goal_pos
         }
-
-
+        #todo: you 
+    def generate_random_map(self,dimension = 15):
+        pass
 
