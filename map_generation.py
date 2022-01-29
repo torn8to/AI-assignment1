@@ -1,6 +1,15 @@
 import random
 class map_generator():
-    def generate_from_list(map = None, starting_pos = None):
+    def file_to_map(file:open):
+
+        map = []
+        map.append(file.readline().split())
+        nl = file.readline().split()
+        while(len(nl) != 0):
+            map.append(nl)
+            nl = file.readline().split()
+
+
         starting_pos = (None,None)
         goal_pos = (None,None)
 
@@ -18,7 +27,7 @@ class map_generator():
             'goal': goal_pos
         }
 
-    def generate_random_map(self,cols = 10, rows = 10):
+    def generate_random_map(cols = 10, rows = 10):
         map = []
         for row in range(rows):
             temp_row = []
@@ -37,7 +46,7 @@ class map_generator():
             'goal':goal
         }
 
-    def map_to_string(self,map):
+    def map_to_string(map):
         map_string = ''
         for row in map:
             for val in row[:-1]:
