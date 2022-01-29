@@ -1,10 +1,15 @@
 import random
 
 class Map():
-    def __init__(self,map, start,goal):
+    def __init__(self,map,start,goal):
         self.map = map
-        self.starting_pos =  start
+        self.starting_pos = start
         self.goal = goal
+        self.max_x = len(map[0])
+        self.max_y = len(map)
+
+    def get_terrain(self,position):
+        return int(self.map[position[1]][position[0]])  
 
 class map_generator():
     def file_to_map(file:open):
