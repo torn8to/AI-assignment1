@@ -3,7 +3,7 @@ from map_generation import map_generator
 
 
 if __name__ =='__main__':
-    if len(sys.argv) == 0:
+    if len(sys.argv) == 1:
         map = map_generator.generate_random_map()
         #todo: implement random map  generation
     else:
@@ -11,4 +11,3 @@ if __name__ =='__main__':
         file = open(file_path)
         map = map_generator.file_to_map(file)
         #todo: do something with the map object
-
