@@ -53,3 +53,4 @@ class map():
         self.map = map
         self.starting_pos
         self.goal
+
