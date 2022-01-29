@@ -1,20 +1,17 @@
-
+import random
 class map_generator():
-    def string_to_map(self,map_string):
+    def generate_from_list(map = None, starting_pos = None):
         starting_pos = (None,None)
         goal_pos = (None,None)
 
-        map = []
-        rows = map_string.split('\n')
-        for row in rows:
-            map.append(row.split('\t'))
-        for row in range(len(map)):
-            for col in range(len(map[0])):
+        for y in range(len(map)):
+            for x in range(len(map[0])):
                 if map[y][x] == 'S':
-                    starting_pos = (col,row)
+                    starting_pos = (x,y)
 
                 if map[y][x] == 'G':
-                    goal_pos = (col,row)
+                    goal_pos = (x,y)
+
         return {
             'map':map,
             'start':starting_pos,

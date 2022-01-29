@@ -9,12 +9,7 @@ if __name__ =='__main__':
     else:
         file_path = sys.argv[1]
         file = open(file_path)
-        map = []
-        row = file.readline().split()
-        while(len(row) != 0):
-            map.append(row)
-            row = file.readline().split()
-        map_generator.generate_from_list(map = map)
+        print(map_generator.file_to_map(file))
         #todo: do something with the map object
     print('yeeah')
 
