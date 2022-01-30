@@ -2,6 +2,10 @@ import random
 
 class Map():
     def __init__(self,map,start,goal):
+        for x in range(len(map[0])):
+            for y in range(len(map)):
+                if not (map[y][x] == 'G' or map[y][x] == 'S'):
+                    map[y][x] = int(map[y][x])
         self.map = map
         self.starting_pos = start
         self.goal = goal

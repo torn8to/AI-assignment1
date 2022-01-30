@@ -41,7 +41,7 @@ class PaFinder:
         forward_cost = self.map[self.exploring[1]][self.exploring[0]]
         if forward_cost == 'S' or forward_cost == 'G':
             forward_cost = 1
-        return forward_cost
+        return int(forward_cost)
 
     def dictionary_holder(self, action_needed, creation):
         if action_needed == "TURNING" and creation == True:
