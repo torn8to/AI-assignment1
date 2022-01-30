@@ -1,5 +1,7 @@
 from map_generation import map
 from enum import Enum
+
+
 class direction(Enum):
     NORTH = 0
     EAST = 1

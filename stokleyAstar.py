@@ -1,8 +1,19 @@
 import math
+from enum import Enum
+import sys
+
 
 data=[[4, "G", 4, 6],
       [2, 9, 9, 6],
       [1, 4, "S", 3]]
+
+class heuristic(Enum):
+    ZERO = 'zero'
+    MIN = 'min'
+    MAX = 'max'
+    SUM = 'sum'
+    better_than_sum = 'bet'
+    bet_x_three = 'bx3'
 
 class Node:
     def __init__(self, coordinates, orientation, cumulative_cost):
@@ -13,8 +24,9 @@ class Node:
 
 class PaFinder:
 
-    def __init__(self, map):
+    def __init__(self, map, heuristic = heuristic.ZERO):
         self.map = map
+        self.heuristic = heuristic
         self.goal = [0, 0]
         self.current = [0, 0]
         self.frontier = []
@@ -42,6 +54,25 @@ class PaFinder:
         if forward_cost == 'S' or forward_cost == 'G':
             forward_cost = 1
         return int(forward_cost)
+
+    def heurisitc_calculator(self,current_x,current_y):
+        goal_x = self.goal[0]
+        goal_y = self.goal[1]
+        hor_dist = abs(goal_x-current_x)
+        vert_dist = abs(goal_y - current_y)
+        better_than_sum = hor_dist +vert_dist
+        if self.heuristic == heuristic.ZERO:
+            return 0
+        elif self.heuristic == heuristic.MIN:
+            return min(hor_dist+1, vert_dist+1)
+        elif self.heuristic == heuristic.MAX:
+            return max(hor_dist, vert_dist)
+        elif self.heuristic == heuristic.SUM:
+            return hor_dist + vert_dist
+        elif self.heuristic == heuristic.better_than_sum:
+            return better_than_sum
+        elif self.heuristic == heuristic.bet_x_three:
+            return better_than_sum * 3
 
     def dictionary_holder(self, action_needed, creation):
         if action_needed == "TURNING" and creation == True:
@@ -99,7 +130,7 @@ class PaFinder:
                     self.exploring = [newx, newy]
 
                     temp_cost = self.dictionary_holder("TURNING", True)[turn] + self.dictionary_holder("MOVE", True)[move]
-                    #TODO temp_cost + heuristic 
+                    temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
                     new_node = Node(self.exploring, new_orientation, temp_cost)
                     if turn == "None":
                         new_node.path = (('%s')%(move))
@@ -189,7 +220,7 @@ class PaFinder:
                     self.exploring = [newx, newy]
 
                     temp_cost = self.dictionary_holder("TURNING", False)[turn] + self.dictionary_holder("MOVE", False)[move]
-                    #TODO temp_cost + heuristic
+                    temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
                     new_node = Node(self.exploring, new_orientation, (parent_node.cumulative_cost + temp_cost))
                     new_node.path.append(parent_node.path)
                     if turn == "None":

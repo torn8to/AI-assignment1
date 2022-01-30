@@ -52,17 +52,17 @@ class map_generator():
         map[start[1]][start[0]] = 'S'
         return Map(map,start,goal)
 
-    def map_to_string(map):
+    def map_to_string(map:list):
         map_string = ''
         for row in map:
             for val in row[:-1]:
-                map_string += val + '\t'
-            map_string += row[-1]
+                map_string += str(val) + '\t'
+            map_string += str(row[-1])
             map_string += '\n'
         return map_string[:-1]
 
-    def map_to_file(map):
-        string = map_generator.map_to_string(map)
+    def map_to_file(map:Map):
+        string = map_generator.map_to_string(map.map)
         filepath ='premade boards/board0001.txt'
         file = open(filepath,'w')
         file.write(string)
