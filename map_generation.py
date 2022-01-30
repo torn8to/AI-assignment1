@@ -56,3 +56,10 @@ class map_generator():
             map_string += row[-1]
             map_string += '\n'
         return map_string[:-1]
+
+    def map_to_file(map):
+        string = map_generator.map_to_string(map)
+        filepath ='premade boards/board0001.txt'
+        file = open(filepath,'w')
+        file.write(string)
+        file.close()

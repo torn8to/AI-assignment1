@@ -6,17 +6,21 @@ from robot import Heuristic
 import time
 
 
+
 if __name__ =='__main__':
+    #tskrd the current memory state of the machine to compare against the ending state
     total_memory, initial_used_memory, free_memory = map(int, os.popen('free -t -m').readlines()[-1].split()[1:])
     if len(sys.argv) == 1:
         map = map_generator.generate_random_map(5,5)
         print(map_generator.map_to_string(map.map))
+
+        '''
         robot = Robot(map, Heuristic.SUM, map.starting_pos)
         # print(robot.calculate_heuristic())
         robot.check_neighbors()
         # start_time = time.time()
         # while(time.time() - start_time < 4)
-
+        '''
         #todo: implement random map  generation
     else:
         file_path = sys.argv[1]
