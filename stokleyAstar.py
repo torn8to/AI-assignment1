@@ -3,9 +3,9 @@ from enum import Enum
 import sys
 
 
-# data=[[4, "G", 4, 6],
-#       [2, 9, 9, 6],
-#       [1, 4, "S", 3]]
+data=[[4, "G", 4, 6],
+      [2, 9, 9, 6],
+      [1, 4, "S", 3]]
 
 class heuristic(Enum):
     ZERO = 'zero'
@@ -186,30 +186,6 @@ class PaFinder:
         holder = [new_position, new_orientation]
         return holder
 
-    # def duplicate_check(self, node, lowest_node):
-    #     duplicate_orientaiton = 0
-    #     best_orientation = 0
-    #     if node.orientation == -90 or 270:
-    #         duplicate_orientaiton = 'Left'
-    #     if lowest_node.orientation == -90 or 270:
-    #         best_orientation = 'Left'
-    #     if node.orientation == 90 or -270:
-    #         duplicate_orientaiton = 'Right'
-    #     if lowest_node.orientation == 90 or -270:
-    #         best_orientation = 'Right'
-    #     if node.orientation == 180 or -180:
-    #         duplicate_orientaiton = 'Down'
-    #     if lowest_node.orientation == 180 or -180:
-    #         best_orientation = 'Down'
-    #     if node.orientation == 0 or -360 or 360:
-    #         duplicate_orientaiton = 'Up'
-    #     if lowest_node.orientation == 0 or -360 or 360:
-    #         best_orientaiton = 'Up'
-    #     if duplicate_orientaiton == best_orientaiton:
-    #         print(best_orientaiton)
-    #         self.frontier.remove(node)
-    #     return
-
     def cheapest_node(self):
         lowest_cost = 1000
         lowest_node = 0
@@ -275,8 +251,8 @@ class PaFinder:
             print(cheapest_node.path, cheapest_node.cumulative_cost, self.counter)
 
 
-# test = PaFinder(data)
-#
-# test.create_frontier()
-#
-# test.iterator()
+test = PaFinder(data)
+
+test.create_frontier()
+
+test.iterator()
