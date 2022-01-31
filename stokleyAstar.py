@@ -1,11 +1,11 @@
 import math
+import random
 from enum import Enum
 import sys
 
 
-# data=[[4, "G", 4, 6],
-#       [2, 9, 9, 6],
-#       [1, 4, "S", 3]]
+
+
 
 class heuristic(Enum):
     ZERO = 'zero'
@@ -35,8 +35,9 @@ class Node:
 
 class PaFinder:
 
-    def __init__(self, map, heuristic = heuristic.ZERO):
+    def __init__(self, map, random_num, heuristic = heuristic.ZERO):
         self.map = map
+        self.random_num = random_num
         self.heuristic = heuristic
         self.goal = [0, 0]
         self.current = [0, 0]
@@ -44,12 +45,15 @@ class PaFinder:
         self.exploring = []
         self.visited = []
         self.counter = 0
+        self.start = [0, 0]
+
 
         for y in range(len(self.map)):
             for x in range(len(self.map[y])):
                 if self.map[y][x] == "S":
                     self.current = [x, y]
                     self.exploring = [x, y]
+                    self.start = [x, 7]
                 elif self.map[y][x] == "G":
                     self.goal = [x, y]
 
@@ -85,18 +89,32 @@ class PaFinder:
         elif self.heuristic == heuristic.bet_x_three:
             return better_than_sum * 3
 
-    def dictionary_holder(self, action_needed, creation):
-        if action_needed == "TURNING" and creation == True:
+    def dictionary_holder(self, action_needed, creation, random):
+        if action_needed == "TURNING" and creation == True and random == 0:
             return {
                 "None": 0,
                 "Left": self.get_turn_cost(),
                 "Right": self.get_turn_cost(),
                 "Reverse": (2 * self.get_turn_cost()),
             }
-        if action_needed == "TURNING" and creation != True:
+        if action_needed == "TURNING" and creation == True and random == 1:
+            return {
+                "Left": self.get_turn_cost(),
+                "None": 0,
+                "Reverse": (2 * self.get_turn_cost()),
+                "Right": self.get_turn_cost(),
+
+            }
+        if action_needed == "TURNING" and creation != True and random == 0:
             return {
                 "None": 0,
                 "Left": self.get_turn_cost(),
+                "Right": self.get_turn_cost(),
+            }
+        if action_needed == "TURNING" and creation != True and random == 1:
+            return {
+                "Left": self.get_turn_cost(),
+                "None": 0,
                 "Right": self.get_turn_cost(),
             }
         if action_needed == "MOVE":
@@ -105,18 +123,32 @@ class PaFinder:
                 "Bash": (self.forward_cost() + 3),
             }
 
-    def dictionary_holder_empty(self, action_needed, creation):
-        if action_needed == "TURNING" and creation == True:
+    def dictionary_holder_empty(self, action_needed, creation, rand_num):
+        if action_needed == "TURNING" and creation == True and rand_num == 0:
             return {
                 "None": 0,
                 "Left": 0,
                 "Right": 0,
                 "Reverse": 0,
             }
-        if action_needed == "TURNING" and creation != True:
+        if action_needed == "TURNING" and creation == True and rand_num == 1:
+            return {
+                "Left": 0,
+                "None": 0,
+                "Reverse": 0,
+                "Right": 0,
+
+            }
+        if action_needed == "TURNING" and creation != True and rand_num == 0:
             return {
                 "None": 0,
                 "Left": 0,
+                "Right": 0,
+            }
+        if action_needed == "TURNING" and creation != True and rand_num == 1:
+            return {
+                "Left": 0,
+                "None": 0,
                 "Right": 0,
             }
         if action_needed == "MOVE":
@@ -127,12 +159,13 @@ class PaFinder:
 
     # takes self and returns a frontier
     def create_frontier(self):
+        rand_num = self.random_num
         self.counter += 1
         parent_node = Node(self.current, 0, 1)
-        for turn in self.dictionary_holder_empty("TURNING", True).keys():
+        for turn in self.dictionary_holder_empty("TURNING", True, rand_num).keys():
             holder = []
             new_orientation = []
-            for move in self.dictionary_holder_empty("MOVE", True).keys():
+            for move in self.dictionary_holder_empty("MOVE", True, rand_num).keys():
                 self.exploring = []
                 # Orientation was set to Zero because we know it is north
                 newx, newy = self.result(self.current, turn, move, 0)[0]
@@ -140,7 +173,7 @@ class PaFinder:
                 if newy in range(len(self.map)) and newx in range(len(self.map[newy])):
                     self.exploring = [newx, newy]
 
-                    temp_cost = self.dictionary_holder("TURNING", True)[turn] + self.dictionary_holder("MOVE", True)[move]
+                    temp_cost = self.dictionary_holder("TURNING", True, rand_num)[turn] + self.dictionary_holder("MOVE", True, rand_num)[move]
                     temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
                     new_node = Node(self.exploring, new_orientation, temp_cost)
                     if turn == "None":
@@ -212,14 +245,14 @@ class PaFinder:
                 return False
         return True
 
-    def expand_frontier(self):
+    def expand_frontier(self, rand_num):
         parent_node = self.cheapest_node()
         self.current = parent_node.coordinates
 
-        for turn in self.dictionary_holder_empty("TURNING", False).keys():
+        for turn in self.dictionary_holder_empty("TURNING", False, rand_num).keys():
             holder = []
             new_orientation = []
-            for move in self.dictionary_holder_empty("MOVE", False).keys():
+            for move in self.dictionary_holder_empty("MOVE", False, rand_num).keys():
                 self.exploring = []
                 newx, newy = self.result(parent_node.coordinates, turn, move, parent_node.orientation)[0]
                 new_orientation = self.result(parent_node.coordinates, turn, move, parent_node.orientation)[1]
@@ -230,7 +263,8 @@ class PaFinder:
 
                     self.exploring = [newx, newy]
 
-                    temp_cost = self.dictionary_holder("TURNING", False)[turn] + self.dictionary_holder("MOVE", False)[move]
+                    temp_cost = self.dictionary_holder("TURNING", False, rand_num)[turn] + \
+                                self.dictionary_holder("MOVE", False, rand_num)[move]
                     temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
                     duplicate_search = False
                     new_node = Node(self.exploring, new_orientation, (parent_node.cumulative_cost + temp_cost))
@@ -265,18 +299,29 @@ class PaFinder:
         cheapest_node = self.cheapest_node()
         # print(cheapest_node.coordinates, cheapest_node.path, cheapest_node.cumulative_cost)
         if cheapest_node.coordinates != self.goal:
+
+            if self.counter > 1000:
+                print('second_self')
+                print(self.cheapest_node().path)
+                self.current = self.start
+                self.frontier = []
+                self.exploring = self.start
+                self.visited = []
+                self.counter = 0
+                print(self.frontier)
+                random_num = random.choice([0, 1])
+                self.random_num = random_num
+                self.create_frontier()
+                print(self.frontier)
+                print('iterate')
+                self.iterator()
             self.clean_frontier(cheapest_node)
             self.counter += 1
-            self.expand_frontier()
+            self.expand_frontier(random.choice([0, 1]))
             self.frontier.remove(cheapest_node)
             self.iterator()
-        if cheapest_node.coordinates == self.goal:
+        elif cheapest_node.coordinates == self.goal:
             print(cheapest_node.path, cheapest_node.cumulative_cost, self.counter)
             print(len(self.frontier))
 
 
-#test = PaFinder(data)
-
-#test.create_frontier()
-
-#test.iterator()
