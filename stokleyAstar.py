@@ -186,17 +186,37 @@ class PaFinder:
         holder = [new_position, new_orientation]
         return holder
 
+    # def duplicate_check(self, node, lowest_node):
+    #     duplicate_orientaiton = 0
+    #     best_orientation = 0
+    #     if node.orientation == -90 or 270:
+    #         duplicate_orientaiton = 'Left'
+    #     if lowest_node.orientation == -90 or 270:
+    #         best_orientation = 'Left'
+    #     if node.orientation == 90 or -270:
+    #         duplicate_orientaiton = 'Right'
+    #     if lowest_node.orientation == 90 or -270:
+    #         best_orientation = 'Right'
+    #     if node.orientation == 180 or -180:
+    #         duplicate_orientaiton = 'Down'
+    #     if lowest_node.orientation == 180 or -180:
+    #         best_orientation = 'Down'
+    #     if node.orientation == 0 or -360 or 360:
+    #         duplicate_orientaiton = 'Up'
+    #     if lowest_node.orientation == 0 or -360 or 360:
+    #         best_orientaiton = 'Up'
+    #     if duplicate_orientaiton == best_orientaiton:
+    #         print(best_orientaiton)
+    #         self.frontier.remove(node)
+    #     return
+
     def cheapest_node(self):
         lowest_cost = 1000
-        lowest_node = []
+        lowest_node = 0
         for node in self.frontier:
             if node.cumulative_cost < lowest_cost:
                 lowest_cost = node.cumulative_cost
                 lowest_node = node
-            elif node.cumulative_cost == lowest_cost \
-                and node.coordinates == lowest_node.coordinates \
-                and node.orientation == lowest_node.orientation:
-                self.frontier.remove(node)
         return lowest_node
 
     def not_visited(self, value):
@@ -234,12 +254,21 @@ class PaFinder:
                     self.frontier.append(new_node)
                     self.visited.append(self.current)
 
+    def clean_frontier(self, cheapest):
+        for node in self.frontier:
+            if node != cheapest and node.coordinates != self.goal:
+                if node.cumulative_cost == cheapest.cumulative_cost and node.orientation == cheapest.orientation:
+                    self.frontier.remove(node)
+                    print('remove duplicate', node.coordinates, node.orientation)
+
     def iterator(self):
         cheapest_node = self.cheapest_node()
         # print(cheapest_node.coordinates, cheapest_node.path, cheapest_node.cumulative_cost)
         if cheapest_node.coordinates != self.goal:
+            self.clean_frontier(cheapest_node)
             self.counter += 1
             self.expand_frontier()
+            print('remove cheapest', cheapest_node.coordinates)
             self.frontier.remove(cheapest_node)
             self.iterator()
         if cheapest_node.coordinates == self.goal:
