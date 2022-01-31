@@ -3,9 +3,9 @@ from enum import Enum
 import sys
 
 
-data=[[4, "G", 4, 6],
-      [2, 9, 9, 6],
-      [1, 4, "S", 3]]
+# data=[[4, "G", 4, 6],
+#       [2, 9, 9, 6],
+#       [1, 4, "S", 3]]
 
 class heuristic(Enum):
     ZERO = 'zero'
@@ -24,7 +24,7 @@ class Node:
 
 class PaFinder:
 
-    def __init__(self, map, heuristic = heuristic.ZERO):
+    def __init__(self, map, heuristic = heuristic.MAX):
         self.map = map
         self.heuristic = heuristic
         self.goal = [0, 0]
@@ -193,6 +193,10 @@ class PaFinder:
             if node.cumulative_cost < lowest_cost:
                 lowest_cost = node.cumulative_cost
                 lowest_node = node
+            elif node.cumulative_cost == lowest_cost \
+                and node.coordinates == lowest_node.coordinates \
+                and node.orientation == lowest_node.orientation:
+                self.frontier.remove(node)
         return lowest_node
 
     def not_visited(self, value):
@@ -232,6 +236,7 @@ class PaFinder:
 
     def iterator(self):
         cheapest_node = self.cheapest_node()
+        # print(cheapest_node.coordinates, cheapest_node.path, cheapest_node.cumulative_cost)
         if cheapest_node.coordinates != self.goal:
             self.counter += 1
             self.expand_frontier()
@@ -241,8 +246,8 @@ class PaFinder:
             print(cheapest_node.path, cheapest_node.cumulative_cost, self.counter)
 
 
-test = PaFinder(data)
-
-test.create_frontier()
-
-test.iterator()
+# test = PaFinder(data)
+#
+# test.create_frontier()
+#
+# test.iterator()
