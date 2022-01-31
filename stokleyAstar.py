@@ -24,7 +24,7 @@ class Node:
 
 class PaFinder:
 
-    def __init__(self, map, heuristic = heuristic.MAX):
+    def __init__(self, map, heuristic = heuristic.ZERO):
         self.map = map
         self.heuristic = heuristic
         self.goal = [0, 0]
