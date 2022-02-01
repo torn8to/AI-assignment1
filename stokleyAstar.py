@@ -285,7 +285,7 @@ class PaFinder:
                         self.visited[coordinates[1]][coordinates[0]] = True
 
     def iterator(self):
-        while len(self.frontier) > 0 and self.goal_reached != True:
+        while self.goal_reached != True:
             cheapest_node = heapq.heappop(self.frontier)
             if cheapest_node[1] != self.goal:
                 self.current = cheapest_node[1]
@@ -293,9 +293,10 @@ class PaFinder:
             if cheapest_node[1] == self.goal:
                 self.goal_node = cheapest_node
                 self.goal_reached == True
-        print(self.goal_node[1],self.goal_node[0], self.counter)
+                print(cheapest_node, self.counter)
+                break
 
 
 test = PaFinder(data)
-
+print('iterator')
 test.iterator()
