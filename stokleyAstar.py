@@ -1,5 +1,6 @@
 import heapq
 import math
+from collections import deque
 from enum import Enum
 import sys
 
@@ -29,7 +30,7 @@ class West:
     def __init__(self):
         self.filled = False
         self.cumulative_cost = 0
-        self.parent_coordinates = (0, 0)
+        self.parent_coordinates = (0,  0)
         self.parent_orientation = ''
 
 
@@ -70,6 +71,7 @@ class PaFinder:
         self.current = [0, 0]
         self.goal_reached = False
         self.goal_node = []
+        self.start = []
 
 
         heapq.heapify(self.frontier)
@@ -80,6 +82,7 @@ class PaFinder:
                     heapq.heappush(self.frontier, (0, [x, y], "north"))
                     self.exploring = [x, y]
                     self.current = [x, y]
+                    self.start = [x, y]
                 elif self.map[y][x] == "G":
                     self.goal = [x, y]
 
@@ -219,6 +222,44 @@ class PaFinder:
             if orientation.count("east"):
                 return "west"
 
+    def turn_decoder(self, parent, child):
+        if child.count("west"):
+            if parent.count("south"):
+                return "Right"
+            if parent.count("north"):
+                return "Left"
+            if parent.count("west"):
+                return "None"
+            if parent.count("east"):
+                return "Reverse"
+        if child.count("east"):
+            if parent.count("south"):
+                return "Left"
+            if parent.count("north"):
+                return "Right"
+            if parent.count("west"):
+                return "Reverse"
+            if parent.count("east"):
+                return "None"
+        if child.count("south"):
+            if parent.count("south"):
+                return "None"
+            if parent.count("north"):
+                return "Reverse"
+            if parent.count("west"):
+                return "Left"
+            if parent.count("east"):
+                return "Right"
+        if child.count("north"):
+            if parent.count("south"):
+                return "Reverse"
+            if parent.count("north"):
+                return "None"
+            if parent.count("west"):
+                return "Right"
+            if parent.count("east"):
+                return "Right"
+
     def result(self, position, turn, move, orientation):
         x, y = position
         new_orientation = []
@@ -284,19 +325,46 @@ class PaFinder:
                         new_cell.parent_orientation = orientation
                         self.visited[coordinates[1]][coordinates[0]] = True
 
+    def get_move(self, child_coordinates, parent_x, parent_y):
+        if (abs(child_coordinates[0] - parent_x) > 1) or \
+                (abs(child_coordinates[1] - parent_y) > 1):
+            return 'Bash'
+        else:
+            return 'forward'
+
+
+    def back_tracking(self, child_coordinates, orientation, back_tracking_list):
+        if child_coordinates == self.start:
+            while len(back_tracking_list) > 0:
+                print(back_tracking_list.pop())
+        else:
+            child_node = getattr(self.marked_map[child_coordinates[1]][child_coordinates[0]], orientation)
+            parent_y = child_node.parent_coordinates[1]
+            parent_x = child_node.parent_coordinates[0]
+            parent_node = getattr(self.marked_map[parent_y][parent_x], child_node.parent_orientation)
+            move = self.get_move(child_coordinates, parent_x, parent_y)
+            turn = self.turn_decoder(child_node.parent_orientation,orientation)
+            if turn == "None":
+                back_tracking_list.append([move])
+            else:
+                back_tracking_list.append([turn, move])
+            self.back_tracking([parent_x, parent_y], child_node.parent_orientation, back_tracking_list)
+
+
+
     def iterator(self):
-        while self.goal_reached != True:
+        while True:
             cheapest_node = heapq.heappop(self.frontier)
             if cheapest_node[1] != self.goal:
                 self.current = cheapest_node[1]
                 self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
-            if cheapest_node[1] == self.goal:
-                self.goal_node = cheapest_node
-                self.goal_reached == True
-                print(cheapest_node, self.counter)
+            else:
+                back_tracking_list = deque()
+                self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
+                print('Cost =', cheapest_node[0], 'Nodes explored =',self.counter)
                 break
 
 
-test = PaFinder(data)
-print('iterator')
-test.iterator()
+# test = PaFinder(data)
+# print('iterator')
+# test.iterator()
