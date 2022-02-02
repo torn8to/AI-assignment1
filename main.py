@@ -6,24 +6,25 @@ from stokleyAstar import PaFinder, heuristic
 sys.setrecursionlimit(5000)
 process = psutil.Process(os.getpid())
 
+if len(sys.argv) == 1:
+    map = map_generator.generate_random_map(rows=565, cols=565)
+    initial_mem = process.memory_info().rss
+    start = datetime.now()
+    map_generator.map_to_file(map)
 
-    #tskrd the current memory state of the machine to compare against the ending state
+else:
+    initial_mem = process.memory_info().rss
+    start = datetime.now()
 
-initial_mem = process.memory_info().rss
-start = datetime.now()
+    file_path = sys.argv[1]
+    file = open(file_path)
+    map = map_generator.file_to_map(file)
 
+    initial_mem = process.memory_info().rss
+    start = datetime.now()
 
-map = map_generator.generate_random_map(rows=500, cols=500)
-map_generator.map_to_file(map)
+    finder = PaFinder(map.map,heuristic.bet_x_three)
+    finder.iterator()
 
-print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
-print('time elapsed: ' + str(datetime.now()-start))
-
-initial_mem = process.memory_info().rss
-start = datetime.now()
-
-finder = PaFinder(map.map, heuristic=heuristic.ZERO)
-finder.iterator()
-
-print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
-print('time elapsed: ' + str(datetime.now()-start))
+    print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
+    print('time elapsed: ' + str(datetime.now()-start))
