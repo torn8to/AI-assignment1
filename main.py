@@ -13,7 +13,7 @@ initial_mem = process.memory_info().rss
 start = datetime.now()
 
 
-map = map_generator.generate_random_map(rows=500, cols=500)
+map = map_generator.generate_random_map(rows=200, cols=200)
 map_generator.map_to_file(map)
 
 print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
