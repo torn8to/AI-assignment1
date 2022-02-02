@@ -291,8 +291,8 @@ class PaFinder:
         holder = [new_position, new_orientation]
         return holder
 
-    def expand_frontier(self, cumulative_cost, coordinates, orientation):
-
+    def expand_frontier(self, cumulative_heuristic, coordinates, orientation):
+        cumulative_cost = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_cost
         if self.counter == 0:
             first = True
         else:
@@ -313,12 +313,14 @@ class PaFinder:
                     self.exploring = [newx, newy]
                     temp_cost = self.dictionary_holder("TURNING", first)[turn] \
                         + self.dictionary_holder("MOVE", first)[move]
-                    temp_cost = temp_cost + self.heuristic_calculator(newx, newy)
+                    heuristic_temp_cost = temp_cost + self.heuristic_calculator(newx, newy)
+
+                    heuristic_final_cost = temp_cost + cumulative_heuristic
                     final_cost = temp_cost + cumulative_cost
 
                     new_cell = getattr(self.marked_map[newy][newx], new_orientation)
                     if new_cell.cumulative_cost > final_cost or new_cell.filled == False:
-                        heapq.heappush(self.frontier, (final_cost, [newx, newy], new_orientation))
+                        heapq.heappush(self.frontier, (heuristic_final_cost, [newx, newy], new_orientation))
                         new_cell.cumulative_cost = final_cost
                         new_cell.filled = True
                         new_cell.parent_coordinates = coordinates
@@ -351,17 +353,19 @@ class PaFinder:
             self.back_tracking([parent_x, parent_y], child_node.parent_orientation, back_tracking_list)
 
 
-
     def iterator(self):
         while True:
             cheapest_node = heapq.heappop(self.frontier)
+            cheapest_x = cheapest_node[1][0]
+            cheapest_y = cheapest_node[1][1]
             if cheapest_node[1] != self.goal:
                 self.current = cheapest_node[1]
                 self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
             else:
                 back_tracking_list = deque()
+                best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
                 self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
-                print('Cost =', cheapest_node[0], 'Nodes explored =',self.counter)
+                print('Heuristic Cost = ', cheapest_node[0],'Cost =', best_node.cumulative_cost, 'Nodes explored =',self.counter)
                 break
 
 
