@@ -204,6 +204,10 @@ class PaFinder:
             if node.cumulative_cost < lowest_cost:
                 lowest_cost = node.cumulative_cost
                 lowest_node = node
+            elif node.cumulative_cost == lowest_cost \
+                and node.coordinates == lowest_node.coordinates \
+                and node.orientation == lowest_node.orientation:
+                self.frontier.remove(node)
         return lowest_node
 
     def not_visited(self, value):
@@ -232,51 +236,29 @@ class PaFinder:
 
                     temp_cost = self.dictionary_holder("TURNING", False)[turn] + self.dictionary_holder("MOVE", False)[move]
                     temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
-                    duplicate_search = False
                     new_node = Node(self.exploring, new_orientation, (parent_node.cumulative_cost + temp_cost))
-                    if self.counter >= 0:
-                        for duplicate in self.frontier:
-                            if duplicate.coordinates == new_node.coordinates \
-                                    and duplicate.numeral_orientation == new_node.numeral_orientation \
-                                    and duplicate.cumulative_cost <= new_node.cumulative_cost:
-                                duplicate_search = True
-                    if duplicate_search == False:
-                        new_node.path.append(parent_node.path)
-                        if turn == "None":
-                            new_node.path.append(('%s')%(move))
-                        elif turn != "None":
-                            new_node.path.append(('%s %s')%(turn, move))
-                        self.frontier.append(new_node)
-                        self.visited.append(self.current)
-
-    def clean_frontier(self, cheapest):
-        for node in self.frontier:
-            if node != cheapest and node.coordinates != self.goal \
-                    and node.cumulative_cost >= cheapest.cumulative_cost \
-                    and node.coordinates == cheapest.coordinates \
-                    and node.numeral_orientation == cheapest.numeral_orientation:
-                self.frontier.remove(node)
-
-        return
-
-
+                    new_node.path.append(parent_node.path)
+                    if turn == "None":
+                        new_node.path.append(('%s')%(move))
+                    elif turn != "None":
+                        new_node.path.append(('%s %s')%(turn, move))
+                    self.frontier.append(new_node)
+                    self.visited.append(self.current)
 
     def iterator(self):
         cheapest_node = self.cheapest_node()
         # print(cheapest_node.coordinates, cheapest_node.path, cheapest_node.cumulative_cost)
         if cheapest_node.coordinates != self.goal:
-            self.clean_frontier(cheapest_node)
             self.counter += 1
             self.expand_frontier()
             self.frontier.remove(cheapest_node)
             self.iterator()
         if cheapest_node.coordinates == self.goal:
             print(cheapest_node.path, cheapest_node.cumulative_cost, self.counter)
-            print(len(self.frontier))
 
 
-#test = PaFinder(data)
-
-#test.create_frontier()
-
-#test.iterator()
+# test = PaFinder(data)
+#
+# test.create_frontier()
+#
+# test.iterator()
