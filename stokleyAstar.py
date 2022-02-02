@@ -1,3 +1,4 @@
+import heapq
 import math
 from enum import Enum
 import sys
@@ -15,12 +16,46 @@ class heuristic(Enum):
     better_than_sum = 'bet'
     bet_x_three = 'bx3'
 
-class Node:
-    def __init__(self, coordinates, orientation, cumulative_cost):
-        self.coordinates = coordinates
-        self.orientation = orientation
-        self.cumulative_cost = cumulative_cost
-        self.path = []
+
+class East:
+    def __init__(self):
+        self.filled = False
+        self.cumulative_cost = 0
+        self.parent_coordinates = (0, 0)
+        self.parent_orientation = ''
+
+
+class West:
+    def __init__(self):
+        self.filled = False
+        self.cumulative_cost = 0
+        self.parent_coordinates = (0, 0)
+        self.parent_orientation = ''
+
+
+class North:
+    def __init__(self):
+        self.filled = False
+        self.cumulative_cost = 0
+        self.parent_coordinates = (0, 0)
+        self.parent_orientation = ''
+
+
+class South:
+    def __init__(self):
+        self.filled = False
+        self.cumulative_cost = 0
+        self.parent_coordinates = (0, 0)
+        self.parent_orientation = ''
+
+
+class MapCell:
+    def __init__(self):
+        self.east = East
+        self.west = West
+        self.north = North
+        self.south = South
+
 
 class PaFinder:
 
@@ -28,25 +63,64 @@ class PaFinder:
         self.map = map
         self.heuristic = heuristic
         self.goal = [0, 0]
-        self.current = [0, 0]
+        # PriorityQueue will store a set of coordinates and a direction
         self.frontier = []
         self.exploring = []
-        self.visited = []
         self.counter = 0
+        self.current = [0, 0]
+        self.goal_reached = False
+        self.goal_node = []
+
+
+        heapq.heapify(self.frontier)
 
         for y in range(len(self.map)):
             for x in range(len(self.map[y])):
                 if self.map[y][x] == "S":
-                    self.current = [x, y]
+                    heapq.heappush(self.frontier, (0, [x, y], "north"))
                     self.exploring = [x, y]
+                    self.current = [x, y]
                 elif self.map[y][x] == "G":
                     self.goal = [x, y]
+
+        self.marked_map = self.map_map()
+        self.visited = self.visited_function()
+
+    def visited_function(self):
+        new_visited = []
+        for y in range(len(self.map)):
+            temp_row = []
+            for x in range(len(self.map[y])):
+                new_cell = False
+                temp_row.append(new_cell)
+            new_visited.append(temp_row)
+        return new_visited
+
+    def map_map(self):
+        new_map = []
+        for y in range(len(self.map)):
+            temp_row = []
+            for x in range(len(self.map[y])):
+                new_cell = MapCell()
+                new_cell.north = North()
+                new_cell.south = South()
+                new_cell.east = East()
+                new_cell.west = West()
+                new_cell.coordinates = [x, y]
+                temp_row.append(new_cell)
+            new_map.append(temp_row)
+        origin = new_map[self.exploring[1]][self.exploring[0]]
+        origin.parent_coordinates = ['x', 'y']
+        origin.coordinates = (self.exploring[0], self.exploring[1])
+        return new_map
 
     def get_turn_cost(self):
         turn_cost = self.map[self.current[1]][self.current[0]]
         if turn_cost == 'S':
             turn_cost = 1
         turn_cost = math.ceil((turn_cost/2))
+        if turn_cost == 'G':
+            turn_cost = 0
         return turn_cost
 
     def forward_cost(self):
@@ -55,16 +129,21 @@ class PaFinder:
             forward_cost = 1
         return int(forward_cost)
 
-    def heurisitc_calculator(self,current_x,current_y):
+    def heuristic_calculator(self, current_x, current_y):
         goal_x = self.goal[0]
         goal_y = self.goal[1]
         hor_dist = abs(goal_x-current_x)
         vert_dist = abs(goal_y - current_y)
-        better_than_sum = hor_dist * vert_dist
+        better_than_sum = hor_dist + vert_dist
+        if(hor_dist > 0)
+            beter_than_sum +=1
+        if(vert_dist > 0)
+            beter_than_sum +=1
+            
         if self.heuristic == heuristic.ZERO:
             return 0
         elif self.heuristic == heuristic.MIN:
-            return min(hor_dist+1, vert_dist+1)
+            return min(hor_dist, vert_dist)
         elif self.heuristic == heuristic.MAX:
             return max(hor_dist, vert_dist)
         elif self.heuristic == heuristic.SUM:
@@ -75,14 +154,14 @@ class PaFinder:
             return better_than_sum * 3
 
     def dictionary_holder(self, action_needed, creation):
-        if action_needed == "TURNING" and creation == True:
+        if action_needed == "TURNING" and creation is True:
             return {
                 "None": 0,
                 "Left": self.get_turn_cost(),
                 "Right": self.get_turn_cost(),
                 "Reverse": (2 * self.get_turn_cost()),
             }
-        if action_needed == "TURNING" and creation != True:
+        if action_needed == "TURNING" and not creation:
             return {
                 "None": 0,
                 "Left": self.get_turn_cost(),
@@ -95,14 +174,14 @@ class PaFinder:
             }
 
     def dictionary_holder_empty(self, action_needed, creation):
-        if action_needed == "TURNING" and creation == True:
+        if action_needed == "TURNING" and creation is True:
             return {
                 "None": 0,
                 "Left": 0,
                 "Right": 0,
                 "Reverse": 0,
             }
-        if action_needed == "TURNING" and creation != True:
+        if action_needed == "TURNING" and not creation:
             return {
                 "None": 0,
                 "Left": 0,
@@ -114,46 +193,36 @@ class PaFinder:
                 "Bash": 0,
             }
 
-    # takes self and returns a frontier
-    def create_frontier(self):
-        self.counter += 1
-        parent_node = Node(self.current, 0, 1)
-        for turn in self.dictionary_holder_empty("TURNING", True).keys():
-            holder = []
-            new_orientation = []
-            for move in self.dictionary_holder_empty("MOVE", True).keys():
-                self.exploring = []
-                # Orientation was set to Zero because we know it is north
-                newx, newy = self.result(self.current, turn, move, 0)[0]
-                new_orientation = self.result(self.current, turn, move, 0)[1]
-                if newy in range(len(self.map)) and newx in range(len(self.map[newy])):
-                    self.exploring = [newx, newy]
-
-                    temp_cost = self.dictionary_holder("TURNING", True)[turn] + self.dictionary_holder("MOVE", True)[move]
-                    temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
-                    new_node = Node(self.exploring, new_orientation, temp_cost)
-                    if turn == "None":
-                        new_node.path = (('%s')%(move))
-                    elif turn != "None":
-                        new_node.path = (('%s %s')%(turn, move))
-                    self.frontier.append(new_node)
-                    self.visited.append(self.current)
-
     def orientation_finder(self, turn, orientation):
-        new_orientation = 700
         if turn.count("Right"):
-            new_orientation = orientation + 90
+            if orientation.count("south"):
+                return "west"
+            if orientation.count("north"):
+                return "east"
+            if orientation.count("west"):
+                return "north"
+            if orientation.count("east"):
+                return "south"
         if turn.count("Left"):
-            new_orientation = orientation - 90
+            if orientation.count("south"):
+                return "east"
+            if orientation.count("north"):
+                return "west"
+            if orientation.count("west"):
+                return "south"
+            if orientation.count("east"):
+                return "north"
         if turn.count("None"):
-            new_orientation = orientation
+            return orientation
         if turn.count("Reverse"):
-            new_orientation = orientation + 180
-        if new_orientation <= -360:
-            new_orientation = new_orientation + 360
-        if new_orientation >= 360:
-            new_orientation = new_orientation - 360
-        return new_orientation
+            if orientation.count("south"):
+                return "north"
+            if orientation.count("north"):
+                return "south"
+            if orientation.count("west"):
+                return "east"
+            if orientation.count("east"):
+                return "west"
 
     def result(self, position, turn, move, orientation):
         x, y = position
@@ -162,22 +231,22 @@ class PaFinder:
         turn = turn
         orientation = orientation
         new_orientation = self.orientation_finder(turn, orientation)
-        if new_orientation == 0:
+        if new_orientation == "north":
             if move.count("Forward"):
                 y -= 1
             if move.count("Bash"):
                 y -= 2
-        if new_orientation == 180 or new_orientation == -180:
+        if new_orientation == "south":
             if move.count("Forward"):
                 y += 1
             if move.count("Bash"):
                 y += 2
-        if new_orientation == 90 or new_orientation == -270:
+        if new_orientation == "east":
             if move.count("Forward"):
                 x += 1
             if move.count("Bash"):
                 x += 2
-        if new_orientation == 270 or new_orientation == -90:
+        if new_orientation == "west":
             if move.count("Forward"):
                 x -= 1
             if move.count("Bash"):
@@ -186,63 +255,53 @@ class PaFinder:
         holder = [new_position, new_orientation]
         return holder
 
-    def cheapest_node(self):
-        lowest_cost = 1000
-        lowest_node = []
-        for node in self.frontier:
-            if node.cumulative_cost < lowest_cost:
-                lowest_cost = node.cumulative_cost
-                lowest_node = node
-        return lowest_node
+    def expand_frontier(self, cumulative_cost, coordinates, orientation):
 
-    def not_visited(self, value):
-        for item in self.visited:
-            if item == value:
-                return False
-        return True
+        if self.counter == 0:
+            first = True
+        else:
+            first = False
+        self.counter += 1
 
-    def expand_frontier(self):
-        parent_node = self.cheapest_node()
-        self.current = parent_node.coordinates
-
-        for turn in self.dictionary_holder_empty("TURNING", False).keys():
-            holder = []
-            new_orientation = []
-            for move in self.dictionary_holder_empty("MOVE", False).keys():
+        for turn in self.dictionary_holder_empty("TURNING", first).keys():
+            for move in self.dictionary_holder_empty("MOVE", first).keys():
+                result_holder = []
+                new_orientation = []
+                final_cost = 0
                 self.exploring = []
-                newx, newy = self.result(parent_node.coordinates, turn, move, parent_node.orientation)[0]
-                new_orientation = self.result(parent_node.coordinates, turn, move, parent_node.orientation)[1]
+                result_holder = self.result(coordinates, turn, move, orientation)
+                newx, newy = result_holder[0]
+                new_orientation = result_holder[1]
 
-                if newy in range(len(self.map)) \
-                        and newx in range(len(self.map[newy])) \
-                        and self.not_visited([newx, newy]):
-
+                if newy in range(len(self.map)) and newx in range(len(self.map[newy])) and not self.visited[newy][newx]:
                     self.exploring = [newx, newy]
+                    temp_cost = self.dictionary_holder("TURNING", first)[turn] \
+                        + self.dictionary_holder("MOVE", first)[move]
+                    temp_cost = temp_cost + self.heuristic_calculator(newx, newy)
+                    final_cost = temp_cost + cumulative_cost
 
-                    temp_cost = self.dictionary_holder("TURNING", False)[turn] + self.dictionary_holder("MOVE", False)[move]
-                    temp_cost = temp_cost + self.heurisitc_calculator(newx,newy)
-                    new_node = Node(self.exploring, new_orientation, (parent_node.cumulative_cost + temp_cost))
-                    new_node.path.append(parent_node.path)
-                    if turn == "None":
-                        new_node.path.append(('%s')%(move))
-                    elif turn != "None":
-                        new_node.path.append(('%s %s')%(turn, move))
-                    self.frontier.append(new_node)
-                    self.visited.append(self.current)
+                    new_cell = getattr(self.marked_map[newy][newx], new_orientation)
+                    if new_cell.cumulative_cost > final_cost or new_cell.filled == False:
+                        heapq.heappush(self.frontier, (final_cost, [newx, newy], new_orientation))
+                        new_cell.cumulative_cost = final_cost
+                        new_cell.filled = True
+                        new_cell.parent_coordinates = coordinates
+                        new_cell.parent_orientation = orientation
+                        self.visited[coordinates[1]][coordinates[0]] = True
 
     def iterator(self):
-        cheapest_node = self.cheapest_node()
-        if cheapest_node.coordinates != self.goal:
-            self.counter += 1
-            self.expand_frontier()
-            self.frontier.remove(cheapest_node)
-            self.iterator()
-        if cheapest_node.coordinates == self.goal:
-            print(cheapest_node.path, cheapest_node.cumulative_cost, self.counter)
+        while self.goal_reached != True:
+            cheapest_node = heapq.heappop(self.frontier)
+            if cheapest_node[1] != self.goal:
+                self.current = cheapest_node[1]
+                self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
+            if cheapest_node[1] == self.goal:
+                self.goal_node = cheapest_node
+                self.goal_reached == True
+                print(cheapest_node, self.counter)
+                break
 
 
 test = PaFinder(data)
-
-test.create_frontier()
-
+print('iterator')
 test.iterator()
