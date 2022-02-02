@@ -134,7 +134,12 @@ class PaFinder:
         goal_y = self.goal[1]
         hor_dist = abs(goal_x-current_x)
         vert_dist = abs(goal_y - current_y)
-        better_than_sum = hor_dist * vert_dist
+        better_than_sum = hor_dist + vert_dist
+        if(hor_dist > 0)
+            beter_than_sum +=1
+        if(vert_dist > 0)
+            beter_than_sum +=1
+            
         if self.heuristic == heuristic.ZERO:
             return 0
         elif self.heuristic == heuristic.MIN:
