@@ -21,6 +21,7 @@ class East:
         self.heuristic = 0
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class West:
@@ -30,6 +31,7 @@ class West:
         self.heuristic = 0
         self.parent_coordinates = (0,  0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class North:
@@ -39,6 +41,7 @@ class North:
         self.heuristic = 0
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class South:
@@ -48,6 +51,7 @@ class South:
         self.heuristic = 0
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class MapCell:
@@ -295,6 +299,7 @@ class PaFinder:
 
     def expand_frontier(self, heuristic, coordinates, orientation):
         cumulative_cost = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_cost
+        cumulative_action = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_action
         if self.counter == 0:
             first = True
         else:
@@ -321,7 +326,7 @@ class PaFinder:
                     final_cost = temp_cost + cumulative_cost
 
                     new_cell = getattr(self.marked_map[newy][newx], new_orientation)
-                    if new_cell.filled == False or new_cell.heuristic > heuristic_final_cost:
+                    if not new_cell.filled or new_cell.heuristic > heuristic_final_cost:
                         heapq.heappush(self.frontier, (heuristic_final_cost, [newx, newy], new_orientation))
                         new_cell.cumulative_cost = final_cost
                         new_cell.heuristic = heuristic_final_cost
@@ -329,6 +334,10 @@ class PaFinder:
                         new_cell.parent_coordinates = coordinates
                         new_cell.parent_orientation = orientation
                         self.visited[coordinates[1]][coordinates[0]] = True
+                        if turn == "None":
+                            new_cell.cumulative_action = cumulative_action + 1
+                        else:
+                            new_cell.cumulative_action = cumulative_action + 2
 
 
     def get_move(self, child_coordinates, parent_x, parent_y):
@@ -367,7 +376,7 @@ class PaFinder:
                 back_tracking_list = deque()
                 best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
                 self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
-                print('Cost =', best_node.cumulative_cost, 'Nodes explored =', self.counter)
+                print('Actions taken =', best_node.cumulative_action, ', Cost =', best_node.cumulative_cost, ', Nodes explored =', self.counter)
                 break
             else:
                 self.current = cheapest_node[1]
