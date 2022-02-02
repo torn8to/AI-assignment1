@@ -12,19 +12,39 @@ if len(sys.argv) == 1:
     start = datetime.now()
     map_generator.map_to_file(map)
 
+def determine_heuristic(input):
+     if input.lower() == 'zero':
+         return heuristic.ZERO
+     elif input.lower() == 'min':
+         return heuristic.min
+     elif input.lower() == 'max':
+         return heuristic.MAX
+     elif input.lower() == 'sum':
+         return heuristic.SUM
+     elif input.lower() == 'better':
+         return heuristic.better_than_sum
+     elif input.lower() == 'betterx3':
+         return heuristic.bet_x_three
+     return heuristic.ZERO
+
+initial_mem = process.memory_info().rss
+start = datetime.now()
+if len(len(sys.argv) == 2):
+    map = map_generator.file_to_map(sys.argv[1])
+    heur = determine_heuristic(sys.argv[2])
+
 else:
-    initial_mem = process.memory_info().rss
-    start = datetime.now()
+    map = map_generator.generate_random_map(rows=200, cols=200)
+    map_generator.map_to_file(map)
+    heur = heuristic.ZERO
 
-    file_path = sys.argv[1]
-    file = open(file_path)
-    map = map_generator.file_to_map(file)
+print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
+print('time elapsed: ' + str(datetime.now()-start))
 
-    initial_mem = process.memory_info().rss
-    start = datetime.now()
+start = datetime.now()
 
-    finder = PaFinder(map.map,heuristic.bet_x_three)
-    finder.iterator()
+finder = PaFinder(map.map, heuristic=heur)
+finder.iterator()
 
-    print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
-    print('time elapsed: ' + str(datetime.now()-start))
+print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
+print('time elapsed: ' + str(datetime.now()-start))
