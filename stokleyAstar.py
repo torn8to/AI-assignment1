@@ -347,27 +347,42 @@ class PaFinder:
             move = self.get_move(child_coordinates, parent_x, parent_y)
             turn = self.turn_decoder(child_node.parent_orientation,orientation)
             if turn == "None":
-                back_tracking_list.append([move])
+                back_tracking_list.append(move)
             else:
-                back_tracking_list.append([turn, move])
+                back_tracking_list.append(turn)
+                back_tracking_list.append(move)
             self.back_tracking([parent_x, parent_y], child_node.parent_orientation, back_tracking_list)
 
+
+    # def iterator(self):
+    #     while True:
+    #         cheapest_node = heapq.heappop(self.frontier)
+    #         cheapest_x = cheapest_node[1][0]
+    #         cheapest_y = cheapest_node[1][1]
+    #         if cheapest_node[1] != self.goal:
+    #             self.current = cheapest_node[1]
+    #             self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
+    #         else:
+    #             back_tracking_list = deque()
+    #             best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
+    #             self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
+    #             print('Cost =', best_node.cumulative_cost, 'Nodes explored =',self.counter)
+    #             break
 
     def iterator(self):
         while True:
             cheapest_node = heapq.heappop(self.frontier)
             cheapest_x = cheapest_node[1][0]
             cheapest_y = cheapest_node[1][1]
-            if cheapest_node[1] != self.goal:
-                self.current = cheapest_node[1]
-                self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
-            else:
+            if cheapest_node[1] == self.goal:
                 back_tracking_list = deque()
                 best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
                 self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
-                print('Cost =', best_node.cumulative_cost, 'Nodes explored =',self.counter)
+                print('Cost =', best_node.cumulative_cost, 'Nodes explored =', self.counter)
                 break
-
+            else:
+                self.current = cheapest_node[1]
+                self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
 
 #test = PaFinder(data)
 #print('iterator')
