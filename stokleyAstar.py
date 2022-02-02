@@ -1,12 +1,9 @@
 import heapq
 import math
+import time
+from collections import deque
 from enum import Enum
 import sys
-
-
-data=[[4, "G", 4, 6],
-      [2, 9, 9, 6],
-      [1, 4, "S", 3]]
 
 class heuristic(Enum):
     ZERO = 'zero'
@@ -21,32 +18,40 @@ class East:
     def __init__(self):
         self.filled = False
         self.cumulative_cost = 0
+        self.heuristic = 0
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class West:
     def __init__(self):
         self.filled = False
         self.cumulative_cost = 0
-        self.parent_coordinates = (0, 0)
+        self.heuristic = 0
+        self.parent_coordinates = (0,  0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class North:
     def __init__(self):
         self.filled = False
         self.cumulative_cost = 0
+        self.heuristic = 0
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class South:
     def __init__(self):
         self.filled = False
         self.cumulative_cost = 0
+        self.heuristic = 0
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
+        self.cumulative_action = 0
 
 
 class MapCell:
@@ -70,6 +75,7 @@ class PaFinder:
         self.current = [0, 0]
         self.goal_reached = False
         self.goal_node = []
+        self.start = []
 
 
         heapq.heapify(self.frontier)
@@ -80,6 +86,7 @@ class PaFinder:
                     heapq.heappush(self.frontier, (0, [x, y], "north"))
                     self.exploring = [x, y]
                     self.current = [x, y]
+                    self.start = [x, y]
                 elif self.map[y][x] == "G":
                     self.goal = [x, y]
 
@@ -106,12 +113,14 @@ class PaFinder:
                 new_cell.south = South()
                 new_cell.east = East()
                 new_cell.west = West()
-                new_cell.coordinates = [x, y]
                 temp_row.append(new_cell)
             new_map.append(temp_row)
-        origin = new_map[self.exploring[1]][self.exploring[0]]
-        origin.parent_coordinates = ['x', 'y']
-        origin.coordinates = (self.exploring[0], self.exploring[1])
+        origin = new_map[self.start[1]][self.start[0]]
+        origin.north.parent_coordinates = ['x', 'y']
+        origin.south.parent_coordinates = ['x', 'y']
+        origin.east.parent_coordinates = ['x', 'y']
+        origin.west.parent_coordinates = ['x', 'y']
+
         return new_map
 
     def get_turn_cost(self):
@@ -134,13 +143,7 @@ class PaFinder:
         goal_y = self.goal[1]
         hor_dist = abs(goal_x-current_x)
         vert_dist = abs(goal_y - current_y)
-
-        better_than_sum = hor_dist + vert_dist
-        if(hor_dist > 0):
-            beter_than_sum +=1
-        if(vert_dist > 0):
-            beter_than_sum +=1
-
+        better_than_sum = hor_dist * vert_dist
         if self.heuristic == heuristic.ZERO:
             return 0
         elif self.heuristic == heuristic.MIN:
@@ -225,6 +228,44 @@ class PaFinder:
             if orientation.count("east"):
                 return "west"
 
+    def turn_decoder(self, parent, child):
+        if child.count("west"):
+            if parent.count("south"):
+                return "Right"
+            if parent.count("north"):
+                return "Left"
+            if parent.count("west"):
+                return "None"
+            if parent.count("east"):
+                return "Reverse"
+        if child.count("east"):
+            if parent.count("south"):
+                return "Left"
+            if parent.count("north"):
+                return "Right"
+            if parent.count("west"):
+                return "Reverse"
+            if parent.count("east"):
+                return "None"
+        if child.count("south"):
+            if parent.count("south"):
+                return "None"
+            if parent.count("north"):
+                return "Reverse"
+            if parent.count("west"):
+                return "Left"
+            if parent.count("east"):
+                return "Right"
+        if child.count("north"):
+            if parent.count("south"):
+                return "Reverse"
+            if parent.count("north"):
+                return "None"
+            if parent.count("west"):
+                return "Right"
+            if parent.count("east"):
+                return "Left"
+
     def result(self, position, turn, move, orientation):
         x, y = position
         new_orientation = []
@@ -256,8 +297,9 @@ class PaFinder:
         holder = [new_position, new_orientation]
         return holder
 
-    def expand_frontier(self, cumulative_cost, coordinates, orientation):
-
+    def expand_frontier(self, heuristic, coordinates, orientation):
+        cumulative_cost = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_cost
+        cumulative_action = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_action
         if self.counter == 0:
             first = True
         else:
@@ -278,31 +320,64 @@ class PaFinder:
                     self.exploring = [newx, newy]
                     temp_cost = self.dictionary_holder("TURNING", first)[turn] \
                         + self.dictionary_holder("MOVE", first)[move]
-                    temp_cost = temp_cost + self.heuristic_calculator(newx, newy)
+                    heuristic_temp_cost = temp_cost + self.heuristic_calculator(newx, newy)
+
+                    heuristic_final_cost = heuristic_temp_cost + cumulative_cost
                     final_cost = temp_cost + cumulative_cost
 
                     new_cell = getattr(self.marked_map[newy][newx], new_orientation)
-                    if new_cell.cumulative_cost > final_cost or new_cell.filled == False:
-                        heapq.heappush(self.frontier, (final_cost, [newx, newy], new_orientation))
+                    if not new_cell.filled or new_cell.heuristic > heuristic_final_cost:
+                        heapq.heappush(self.frontier, (heuristic_final_cost, [newx, newy], new_orientation))
                         new_cell.cumulative_cost = final_cost
+                        new_cell.heuristic = heuristic_final_cost
                         new_cell.filled = True
                         new_cell.parent_coordinates = coordinates
                         new_cell.parent_orientation = orientation
                         self.visited[coordinates[1]][coordinates[0]] = True
+                        if turn == "None":
+                            new_cell.cumulative_action = cumulative_action + 1
+                        else:
+                            new_cell.cumulative_action = cumulative_action + 2
+
+
+    def get_move(self, child_coordinates, parent_x, parent_y):
+        if (abs(child_coordinates[0] - parent_x) > 1) or \
+                (abs(child_coordinates[1] - parent_y) > 1):
+            return 'Bash'
+        else:
+            return 'forward'
+
+
+    def back_tracking(self, child_coordinates, orientation, back_tracking_list):
+        if child_coordinates == self.start:
+            while len(back_tracking_list) > 0:
+                print(back_tracking_list.pop())
+        else:
+            child_node = getattr(self.marked_map[child_coordinates[1]][child_coordinates[0]], orientation)
+            parent_y = child_node.parent_coordinates[1]
+            parent_x = child_node.parent_coordinates[0]
+            parent_node = getattr(self.marked_map[parent_y][parent_x], child_node.parent_orientation)
+            move = self.get_move(child_coordinates, parent_x, parent_y)
+            turn = self.turn_decoder(child_node.parent_orientation,orientation)
+            if turn == "None":
+                back_tracking_list.append(move)
+            else:
+                back_tracking_list.append(turn)
+                back_tracking_list.append(move)
+            self.back_tracking([parent_x, parent_y], child_node.parent_orientation, back_tracking_list)
+
 
     def iterator(self):
-        while self.goal_reached != True:
+        while True:
             cheapest_node = heapq.heappop(self.frontier)
-            if cheapest_node[1] != self.goal:
+            cheapest_x = cheapest_node[1][0]
+            cheapest_y = cheapest_node[1][1]
+            if cheapest_node[1] == self.goal:
+                back_tracking_list = deque()
+                best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
+                self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
+                print('Actions taken =', best_node.cumulative_action, ', Cost =', best_node.cumulative_cost, ', Nodes explored =', self.counter)
+                break
+            else:
                 self.current = cheapest_node[1]
                 self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
-            if cheapest_node[1] == self.goal:
-                self.goal_node = cheapest_node
-                self.goal_reached == True
-                print(cheapest_node, self.counter)
-                break
-
-
-test = PaFinder(data)
-print('iterator')
-test.iterator()
