@@ -5,11 +5,6 @@ from collections import deque
 from enum import Enum
 import sys
 
-
-data=[[4, "G", 4, 6],
-      [2, 9, 9, 6],
-      [1, 4, "S", 3]]
-
 class heuristic(Enum):
     ZERO = 'zero'
     MIN = 'min'
@@ -326,7 +321,7 @@ class PaFinder:
                     final_cost = temp_cost + cumulative_cost
 
                     new_cell = getattr(self.marked_map[newy][newx], new_orientation)
-                    if not new_cell.filled or (getattr(self.marked_map[newy][newx], new_orientation)).heuristic >= heuristic_final_cost:
+                    if new_cell.filled == False or new_cell.heuristic > heuristic_final_cost:
                         heapq.heappush(self.frontier, (heuristic_final_cost, [newx, newy], new_orientation))
                         new_cell.cumulative_cost = final_cost
                         new_cell.heuristic = heuristic_final_cost
@@ -334,56 +329,6 @@ class PaFinder:
                         new_cell.parent_coordinates = coordinates
                         new_cell.parent_orientation = orientation
                         self.visited[coordinates[1]][coordinates[0]] = True
-
-    # def get_north(self, cell):
-    #     UD_H = 0
-    #     if cell.north.filled and cell.south.filled:
-    #         if cell.north.heuristic >= cell.south.heuristic:
-    #             UD_H = (cell.north.heuristic)
-    #     if cell.south.filled:
-    #         UD_H = (cell.south.heuristic)
-    #     if cell.north.filled:
-    #         UD_H = (cell.north.heuristic)
-    #     return UD_H
-    #
-    # def get_east(self, cell):
-    #     LR_H = 0
-    #     if cell.east.filled and cell.west.filled:
-    #         if cell.east.heuristic >= cell.west.heuristic:
-    #             LR_H = (cell.east.heuristic)
-    #     if cell.west.filled:
-    #         LR_H = (cell.west.heuristic)
-    #     if cell.east.filled:
-    #         LR_H = (cell.east.heuristic)
-    #     return LR_H
-    #
-    # def cell_replace(self, new_orientation, cell, new_cell_heuristic, new_x, new_y):
-    #     turning_cost = 0
-    #     if not (getattr(cell, new_orientation)).filled:
-    #         return True
-    #     if (getattr(cell, new_orientation)).heuristic >= new_cell_heuristic:
-    #         return True
-    #     UD_H = self.get_north(cell)
-    #     RL_H = self.get_east(cell)
-    #     if self.map[new_y][new_x] == "S":
-    #         turning_cost = 1
-    #     if self.map[new_y][new_x] == "G":
-    #         turning_cost = 0
-    #     else:
-    #         print(self.map[new_y][new_x])
-    #         turning_cost = math.ceil((self.map[new_y][new_x])/2)
-    #
-    #     if new_orientation == ('west' or 'east') and RL_H < UD_H and new_cell_heuristic < RL_H:
-    #         return True
-    #     if new_orientation == ('north' or 'south') and UD_H < RL_H and new_cell_heuristic < UD_H:
-    #         return True
-    #     if RL_H < UD_H:
-    #         if RL_H > new_cell_heuristic + turning_cost:
-    #             return True
-    #     if UD_H < RL_H:
-    #         if UD_H > new_cell_heuristic + turning_cost:
-    #             return True
-
 
 
     def get_move(self, child_coordinates, parent_x, parent_y):
@@ -427,7 +372,3 @@ class PaFinder:
             else:
                 self.current = cheapest_node[1]
                 self.expand_frontier(cheapest_node[0], cheapest_node[1], cheapest_node[2])
-
-test = PaFinder(data)
-print('iterator')
-test.iterator()
