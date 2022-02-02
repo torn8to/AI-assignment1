@@ -291,7 +291,7 @@ class PaFinder:
         holder = [new_position, new_orientation]
         return holder
 
-    def expand_frontier(self, cumulative_heuristic, coordinates, orientation):
+    def expand_frontier(self, heuristic, coordinates, orientation):
         cumulative_cost = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_cost
         if self.counter == 0:
             first = True
@@ -315,7 +315,7 @@ class PaFinder:
                         + self.dictionary_holder("MOVE", first)[move]
                     heuristic_temp_cost = temp_cost + self.heuristic_calculator(newx, newy)
 
-                    heuristic_final_cost = temp_cost + cumulative_heuristic
+                    heuristic_final_cost = heuristic_temp_cost + cumulative_cost
                     final_cost = temp_cost + cumulative_cost
 
                     new_cell = getattr(self.marked_map[newy][newx], new_orientation)
@@ -365,10 +365,10 @@ class PaFinder:
                 back_tracking_list = deque()
                 best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
                 self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
-                print('Heuristic Cost = ', cheapest_node[0],'Cost =', best_node.cumulative_cost, 'Nodes explored =',self.counter)
+                print('Cost =', best_node.cumulative_cost, 'Nodes explored =',self.counter)
                 break
 
 
-# test = PaFinder(data)
-# print('iterator')
-# test.iterator()
+#test = PaFinder(data)
+#print('iterator')
+#test.iterator()
