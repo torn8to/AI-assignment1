@@ -6,12 +6,6 @@ from stokleyAstar import PaFinder, heuristic
 sys.setrecursionlimit(5000)
 process = psutil.Process(os.getpid())
 
-if len(sys.argv) == 1:
-    map = map_generator.generate_random_map(rows=565, cols=565)
-    initial_mem = process.memory_info().rss
-    start = datetime.now()
-    map_generator.map_to_file(map)
-
 def determine_heuristic(input):
      if input.lower() == '1':
          return heuristic.ZERO
@@ -29,22 +23,23 @@ def determine_heuristic(input):
 
 if len(sys.argv) > 1:
     file_path = sys.argv[1]
+    print('heuristic: ' + str(sys.argv[2]))
     file = open(file_path)
     map = map_generator.file_to_map(file)
     heur = determine_heuristic(sys.argv[2])
 
-
 else:
-    map = map_generator.generate_random_map(rows=200, cols=200)
+    map = map_generator.generate_random_map(rows=750, cols=750)
     map_generator.map_to_file(map)
     heur = heuristic.ZERO
 
-
+print('path to solution:')
 initial_mem = process.memory_info().rss
 start = datetime.now()
 
 finder = PaFinder(map.map, heuristic=heur)
 finder.iterator()
 
-print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
+print('map size: ' + str(len(map.map)) + ' x ' + str(len(map.map)))
+print('memory used: ' + str((process.memory_info().rss- initial_mem)/((1024)**2)) + ' mb')
 print('time elapsed: ' + str(datetime.now()-start))

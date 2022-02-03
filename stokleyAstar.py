@@ -76,6 +76,7 @@ class PaFinder:
         self.frontier = []
         self.exploring = []
         self.counter = 0
+        self.total = 0
         self.current = [0, 0]
         self.goal_reached = False
         self.goal_node = []
@@ -328,6 +329,7 @@ class PaFinder:
                 new_orientation = result_holder[1]
 
                 if newy in range(len(self.map)) and newx in range(len(self.map[newy])) and not self.visited[newy][newx]:
+                    self.total += 1
                     self.exploring = [newx, newy]
                     temp_cost = self.dictionary_holder("TURNING", first)[turn] \
                         + self.dictionary_holder("MOVE", first)[move]
@@ -388,8 +390,8 @@ class PaFinder:
                 back_tracking_list = deque()
                 best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
                 self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
-                print('Path depth =', best_node.depth, ', Actions taken =', best_node.cumulative_action, ', Cost =',
-                      best_node.cumulative_cost, ', Nodes explored =', self.counter)
+                print('Path depth =', best_node.depth, ', Actions taken =', best_node.cumulative_action, ', Score =',
+                      100-best_node.cumulative_cost, ', Nodes explored =', self.counter, ', Branching = ', round((self.total-1)/self.counter,2))
                 break
             else:
                 self.current = cheapest_node[1]
