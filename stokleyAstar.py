@@ -22,6 +22,7 @@ class East:
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
         self.cumulative_action = 0
+        self.depth = 0
 
 
 class West:
@@ -32,6 +33,7 @@ class West:
         self.parent_coordinates = (0,  0)
         self.parent_orientation = ''
         self.cumulative_action = 0
+        self.depth = 0
 
 
 class North:
@@ -42,6 +44,7 @@ class North:
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
         self.cumulative_action = 0
+        self.depth = 0
 
 
 class South:
@@ -52,6 +55,7 @@ class South:
         self.parent_coordinates = (0, 0)
         self.parent_orientation = ''
         self.cumulative_action = 0
+        self.depth = 0
 
 
 class MapCell:
@@ -306,6 +310,7 @@ class PaFinder:
     def expand_frontier(self, heuristic, coordinates, orientation):
         cumulative_cost = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_cost
         cumulative_action = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).cumulative_action
+        depth = (getattr(self.marked_map[coordinates[1]][coordinates[0]], orientation)).depth
         if self.counter == 0:
             first = True
         else:
@@ -339,6 +344,7 @@ class PaFinder:
                         new_cell.filled = True
                         new_cell.parent_coordinates = coordinates
                         new_cell.parent_orientation = orientation
+                        new_cell.depth = depth + 1
                         self.visited[coordinates[1]][coordinates[0]] = True
                         if turn == "None":
                             new_cell.cumulative_action = cumulative_action + 1
@@ -382,7 +388,8 @@ class PaFinder:
                 back_tracking_list = deque()
                 best_node = getattr(self.marked_map[cheapest_y][cheapest_x], cheapest_node[2])
                 self.back_tracking(cheapest_node[1], cheapest_node[2], back_tracking_list)
-                print('Actions taken =', best_node.cumulative_action, ', Cost =', best_node.cumulative_cost, ', Nodes explored =', self.counter)
+                print('Path depth =', best_node.depth, ', Actions taken =', best_node.cumulative_action, ', Cost =',
+                      best_node.cumulative_cost, ', Nodes explored =', self.counter)
                 break
             else:
                 self.current = cheapest_node[1]
