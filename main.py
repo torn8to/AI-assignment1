@@ -13,34 +13,34 @@ if len(sys.argv) == 1:
     map_generator.map_to_file(map)
 
 def determine_heuristic(input):
-     if input.lower() == 'zero':
+     if input.lower() == '1':
          return heuristic.ZERO
-     elif input.lower() == 'min':
-         return heuristic.min
-     elif input.lower() == 'max':
+     elif input.lower() == '2':
+         return heuristic.MIN
+     elif input.lower() == '3':
          return heuristic.MAX
-     elif input.lower() == 'sum':
+     elif input.lower() == '4':
          return heuristic.SUM
-     elif input.lower() == 'better':
+     elif input.lower() == '5':
          return heuristic.better_than_sum
-     elif input.lower() == 'betterx3':
+     elif input.lower() == '6':
          return heuristic.bet_x_three
      return heuristic.ZERO
 
-initial_mem = process.memory_info().rss
-start = datetime.now()
-if len(len(sys.argv) == 2):
-    map = map_generator.file_to_map(sys.argv[1])
+if len(sys.argv) > 1:
+    file_path = sys.argv[1]
+    file = open(file_path)
+    map = map_generator.file_to_map(file)
     heur = determine_heuristic(sys.argv[2])
+
 
 else:
     map = map_generator.generate_random_map(rows=200, cols=200)
     map_generator.map_to_file(map)
     heur = heuristic.ZERO
 
-print('memory used: ' + str(round((process.memory_info().rss- initial_mem)/((1024)**2))) + ' mb')
-print('time elapsed: ' + str(datetime.now()-start))
 
+initial_mem = process.memory_info().rss
 start = datetime.now()
 
 finder = PaFinder(map.map, heuristic=heur)
